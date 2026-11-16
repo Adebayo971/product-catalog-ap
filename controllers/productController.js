@@ -47,8 +47,56 @@ export const createProduct = async (req, res) => {
 // GET ALL PRODUCTS
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await productModel.find().populate("createdBy", "name email");
-    res.status(200).json({ message: "All products", total: products.length, data: products });
+    // 1. Get query params from URL: ?search=【entity-Nike¦canonical_name=Nike】&category=Shoes&page=1&limit=10
+    const { search, category, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
+
+    // 2. Build filter object
+    let filter = {};
+
+    // Search: name OR description contains search text (case-insensitive)
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Filter by category
+    if (category) {
+      filter.category = { $regex: category, $options: "i" };
+    }
+
+    // Filter by price range
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    // 3. Pagination math
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // 4. Get total count (for frontend pagination UI)
+    const total = await productModel.countDocuments(filter);
+
+    // 5. Get products with filter + pagination
+    const products = await productModel
+      .find(filter)
+      .populate("createdBy", "name email")
+      .skip(skip)
+      .limit(limitNum)
+      .sort({ createdAt: -1 }); // newest first
+
+    res.status(200).json({
+      message: "All products",
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+      data: products,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
