@@ -7,8 +7,11 @@ import dotenv from "dotenv";
 import cors from "cors";
 import "./models/userModel.js";
 import "./models/productModel.js";
+import "./models/cartModel.js";
 import authRoutes from "./routes/authRoute.js";
 import productRoutes from "./routes/productRoute.js";
+import cartRoutes from "./routes/cartRoute.js";
+
 
 dotenv.config();
 
@@ -22,6 +25,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
 
 const PORT = process.env.PORT;
 mongoose.connect(process.env.MONGO_URL)
