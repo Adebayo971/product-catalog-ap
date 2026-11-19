@@ -8,9 +8,12 @@ import cors from "cors";
 import "./models/userModel.js";
 import "./models/productModel.js";
 import "./models/cartModel.js";
+import "./models/orderModel.js";
 import authRoutes from "./routes/authRoute.js";
 import productRoutes from "./routes/productRoute.js";
 import cartRoutes from "./routes/cartRoute.js";
+import orderRoutes from "./routes/orderRoute.js";
+
 
 
 dotenv.config();
@@ -26,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 const PORT = process.env.PORT;
 mongoose.connect(process.env.MONGO_URL)
